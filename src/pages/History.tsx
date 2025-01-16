@@ -1,35 +1,75 @@
 import { useState, useEffect } from "react"
-import { Card } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/components/ui/use-toast"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import type { Client } from "@/components/ClientForm"
 
+interface DayHistory {
+  date: string;
+  clients: Client[];
+  totalRevenue: number;
+}
+
 export default function History() {
-  const [history, setHistory] = useState<Client[]>([])
+  const [weekHistory, setWeekHistory] = useState<DayHistory[]>([])
+  const [expandedDays, setExpandedDays] = useState<string[]>([])
   const { toast } = useToast()
 
   useEffect(() => {
-    const savedHistory = JSON.parse(localStorage.getItem("history") || "[]")
-    setHistory(savedHistory)
+    const savedHistory = JSON.parse(localStorage.getItem("history") || "[]") as Client[]
+    
+    // Group clients by day
+    const groupedByDay = savedHistory.reduce((acc: { [key: string]: Client[] }, client) => {
+      const date = new Date(client.timestamp).toLocaleDateString()
+      if (!acc[date]) {
+        acc[date] = []
+      }
+      acc[date].push(client)
+      return acc
+    }, {})
+
+    // Convert to array and calculate totals
+    const historyArray = Object.entries(groupedByDay).map(([date, clients]) => ({
+      date,
+      clients,
+      totalRevenue: clients.reduce((sum, client) => sum + client.cost, 0)
+    }))
+
+    // Sort by date (most recent first)
+    historyArray.sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
+
+    setWeekHistory(historyArray)
   }, [])
 
   const clearHistory = () => {
     localStorage.setItem("history", "[]")
-    setHistory([])
+    setWeekHistory([])
+    setExpandedDays([])
     toast({
       title: "Success",
       description: "History cleared successfully"
     })
   }
 
-  const totalRevenue = history.reduce((sum, client) => sum + client.cost, 0)
+  const toggleDayDetails = (date: string) => {
+    setExpandedDays(prev => 
+      prev.includes(date)
+        ? prev.filter(d => d !== date)
+        : [...prev, date]
+    )
+  }
+
+  const totalRevenue = weekHistory.reduce((sum, day) => sum + day.totalRevenue, 0)
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Daily History</h2>
+          <h2 className="text-xl font-semibold">Weekly History</h2>
           <div className="space-x-4">
             <span className="text-sm">
               Total Revenue: <span className="font-bold text-primary">{totalRevenue} DH</span>
@@ -42,20 +82,47 @@ export default function History() {
 
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-4">
-            {history.map((client) => (
-              <Card key={client.id} className="p-4">
-                <div className="flex justify-between items-center">
+            {weekHistory.map((day) => (
+              <Card key={day.date} className="p-4">
+                <div 
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => toggleDayDetails(day.date)}
+                >
                   <div>
-                    <p className="font-medium">{client.name}</p>
+                    <h3 className="font-medium">{day.date}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {client.session === "30min" ? "30 Minutes" : "1 Hour"} - {client.cost} DH
-                      {client.isPromo && " (Promo)"}
+                      Clients: {day.clients.length} | Revenue: {day.totalRevenue} DH
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(client.timestamp).toLocaleTimeString()}
-                  </p>
+                  <Button variant="ghost" size="icon">
+                    {expandedDays.includes(day.date) ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
+
+                {expandedDays.includes(day.date) && (
+                  <div className="mt-4 space-y-3 animate-accordion-down">
+                    {day.clients.map((client) => (
+                      <Card key={client.id} className="p-3">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">{client.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {client.session === "30min" ? "30 Minutes" : "1 Hour"} - {client.cost} DH
+                              {client.isPromo && " (Promo)"}
+                            </p>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(client.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </Card>
             ))}
           </div>
