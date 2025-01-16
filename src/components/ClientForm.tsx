@@ -14,6 +14,7 @@ export type Client = {
   cost: number
   isPromo: boolean
   timestamp: number
+  fifaMatches?: number
 }
 
 type Props = {
@@ -24,14 +25,17 @@ export function ClientForm({ onAddClient }: Props) {
   const [name, setName] = useState("")
   const [session, setSession] = useState("")
   const [isPromo, setIsPromo] = useState(false)
+  const [fifaMatches, setFifaMatches] = useState<number>(1)
   const { toast } = useToast()
 
-  const calculateCost = (session: string, isPromo: boolean) => {
+  const calculateCost = (session: string, isPromo: boolean, matches?: number) => {
     switch (session) {
       case "30min":
         return isPromo ? 10 : 15
       case "1hour":
         return isPromo ? 20 : 25
+      case "fifa":
+        return matches ? matches * 7 : 7
       default:
         return 0
     }
@@ -49,19 +53,30 @@ export function ClientForm({ onAddClient }: Props) {
       return
     }
 
+    if (session === "fifa" && (fifaMatches < 1 || !Number.isInteger(fifaMatches))) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a valid number of FIFA matches"
+      })
+      return
+    }
+
     const newClient: Client = {
       id: crypto.randomUUID(),
       name,
       session,
-      cost: calculateCost(session, isPromo),
+      cost: calculateCost(session, isPromo, fifaMatches),
       isPromo,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      ...(session === "fifa" && { fifaMatches })
     }
 
     onAddClient(newClient)
     setName("")
     setSession("")
     setIsPromo(false)
+    setFifaMatches(1)
     
     toast({
       title: "Success",
@@ -91,9 +106,24 @@ export function ClientForm({ onAddClient }: Props) {
             <SelectContent>
               <SelectItem value="30min">30 Minutes - 15 DH</SelectItem>
               <SelectItem value="1hour">1 Hour - 25 DH</SelectItem>
+              <SelectItem value="fifa">FIFA Matches - 7 DH/match</SelectItem>
             </SelectContent>
           </Select>
         </div>
+
+        {session === "fifa" && (
+          <div className="space-y-2">
+            <Label htmlFor="fifaMatches">Number of FIFA Matches</Label>
+            <Input
+              id="fifaMatches"
+              type="number"
+              min="1"
+              value={fifaMatches}
+              onChange={(e) => setFifaMatches(parseInt(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        )}
 
         <div className="flex items-center space-x-2">
           <Checkbox
