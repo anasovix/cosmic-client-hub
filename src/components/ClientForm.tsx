@@ -14,6 +14,7 @@ export type Client = {
   cost: number
   isPromo: boolean
   timestamp: number
+  postNumber: number
   fifaMatches?: number
 }
 
@@ -25,6 +26,7 @@ export function ClientForm({ onAddClient }: Props) {
   const [name, setName] = useState("")
   const [session, setSession] = useState("")
   const [isPromo, setIsPromo] = useState(false)
+  const [postNumber, setPostNumber] = useState<number>(1)
   const [fifaMatches, setFifaMatches] = useState<number>(1)
   const { toast } = useToast()
 
@@ -69,6 +71,7 @@ export function ClientForm({ onAddClient }: Props) {
       cost: calculateCost(session, isPromo, fifaMatches),
       isPromo,
       timestamp: Date.now(),
+      postNumber,
       ...(session === "fifa" && { fifaMatches })
     }
 
@@ -76,6 +79,7 @@ export function ClientForm({ onAddClient }: Props) {
     setName("")
     setSession("")
     setIsPromo(false)
+    setPostNumber(1)
     setFifaMatches(1)
     
     toast({
@@ -107,6 +111,21 @@ export function ClientForm({ onAddClient }: Props) {
               <SelectItem value="30min">30 Minutes - 15 DH</SelectItem>
               <SelectItem value="1hour">1 Hour - 25 DH</SelectItem>
               <SelectItem value="fifa">FIFA Matches - 7 DH/match</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="postNumber">Post Number</Label>
+          <Select value={postNumber.toString()} onValueChange={(value) => setPostNumber(Number(value))}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select post number" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1">Post 1</SelectItem>
+              <SelectItem value="2">Post 2</SelectItem>
+              <SelectItem value="3">Post 3</SelectItem>
+              <SelectItem value="4">Post 4</SelectItem>
             </SelectContent>
           </Select>
         </div>

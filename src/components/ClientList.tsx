@@ -31,7 +31,7 @@ export function ClientList({ clients, onPayClient, onDeleteClient }: Props) {
               <div>
                 <p className="font-medium">{client.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {client.session === "30min" ? "30 Minutes" : "1 Hour"} - {client.cost} DH
+                  Post {client.postNumber} - {client.session === "30min" ? "30 Minutes" : client.session === "1hour" ? "1 Hour" : `${client.fifaMatches} FIFA Matches`} - {client.cost} DH
                   {client.isPromo && " (Promo)"}
                 </p>
               </div>
