@@ -67,14 +67,14 @@ export default function History() {
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-6">
+      <Card className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <h2 className="text-xl font-semibold">Weekly History</h2>
-          <div className="space-x-4">
-            <span className="text-sm">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 w-full md:w-auto">
+            <span className="text-sm whitespace-nowrap">
               Total Revenue: <span className="font-bold text-primary">{totalRevenue} DH</span>
             </span>
-            <Button variant="destructive" size="sm" onClick={clearHistory}>
+            <Button variant="destructive" size="sm" onClick={clearHistory} className="w-full md:w-auto">
               Clear History
             </Button>
           </div>
@@ -83,7 +83,7 @@ export default function History() {
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-4">
             {weekHistory.map((day) => (
-              <Card key={day.date} className="p-4">
+              <Card key={day.date} className="p-3 md:p-4">
                 <div 
                   className="flex justify-between items-center cursor-pointer"
                   onClick={() => toggleDayDetails(day.date)}
@@ -94,7 +94,7 @@ export default function History() {
                       Clients: {day.clients.length} | Revenue: {day.totalRevenue} DH
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="shrink-0">
                     {expandedDays.includes(day.date) ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
@@ -107,15 +107,15 @@ export default function History() {
                   <div className="mt-4 space-y-3 animate-accordion-down">
                     {day.clients.map((client) => (
                       <Card key={client.id} className="p-3">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
                           <div>
                             <p className="font-medium">{client.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {client.session === "30min" ? "30 Minutes" : "1 Hour"} - {client.cost} DH
+                              Post {client.postNumber} - {client.session === "30min" ? "30 Minutes" : client.session === "1hour" ? "1 Hour" : `${client.fifaMatches} FIFA Matches`} - {client.cost} DH
                               {client.isPromo && " (Promo)"}
                             </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground shrink-0">
                             {new Date(client.timestamp).toLocaleTimeString()}
                           </p>
                         </div>

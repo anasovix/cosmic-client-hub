@@ -21,20 +21,18 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto p-4 space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Add New Client</h2>
-          <ClientForm onAddClient={handleAddClient} />
-        </div>
-        
-        <div>
-          <ClientList
-            clients={clients}
-            onPayClient={handlePayClient}
-            onDeleteClient={handleDeleteClient}
-          />
-        </div>
+    <div className="container max-w-7xl mx-auto p-4 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8">
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold mb-4">Add New Client</h2>
+        <ClientForm onAddClient={handleAddClient} />
+      </div>
+      
+      <div>
+        <ClientList
+          clients={clients}
+          onPayClient={handlePayClient}
+          onDeleteClient={handleDeleteClient}
+        />
       </div>
     </div>
   )
